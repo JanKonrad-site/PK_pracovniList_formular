@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backend Builder – FastAPI + SQLite</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-2: #eef3ff;
+      --text: #172033;
+      --muted: #5d6983;
+      --line: #d8e0f0;
+      --accent: #315efb;
+      --accent-2: #6b8cff;
+      --ok: #14804a;
+      --warn: #b26a00;
+      --danger: #b42318;
+      --shadow: 0 10px 28px rgba(26, 43, 79, .10);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --port: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #f8faff 0%, #eef3fb 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #182033 0%, #27408b 100%);
+      color: white;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      margin-bottom: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      right: -80px;
+      top: -160px;
+      background: radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 72%);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 3.2vw, 42px);
+      line-height: 1.08;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 980px;
+      color: rgba(255,255,255,.88);
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .hero-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.10);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .hero-icon-btn:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.16);
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 330px minmax(560px, 1fr) 410px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel__head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+    }
+
+    .panel__head h2,
+    .panel__head h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .panel__head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .panel__body {
+      padding: 16px 18px 18px;
+    }
+
+    .mission-switch {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .mission-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .mission-btn:hover { transform: translateY(-1px); border-color: var(--accent-2); }
+    .mission-btn.active {
+      border-color: var(--accent);
+      background: #eef3ff;
+      box-shadow: inset 0 0 0 1px rgba(49,94,251,.12);
+    }
+
+    .mission-btn strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .mission-btn span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      display: block;
+    }
+
+    .mission-task {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fbfcff;
+      margin-bottom: 14px;
+    }
+
+    .mission-task h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .mission-task p,
+    .mission-task li {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .mini-list,
+    .steps,
+    .checklist,
+    .bullets {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .mini-list li,
+    .steps li,
+    .checklist li,
+    .bullets li { margin-bottom: 7px; }
+
+    .toolbox-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .toolbox-item {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .toolbox-item:hover {
+      border-color: var(--accent-2);
+      transform: translateY(-1px);
+      background: #f9fbff;
+    }
+
+    .toolbox-icon,
+    .node-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      background: #eef3ff;
+      color: var(--accent);
+      flex: 0 0 auto;
+    }
+
+    .toolbox-item strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 14px;
+    }
+
+    .toolbox-item span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      display: block;
+    }
+
+    .tag {
+      font-size: 11px;
+      color: var(--accent);
+      background: #eef3ff;
+      padding: 6px 8px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .workspace {
+      min-height: 780px;
+      position: relative;
+      padding: 0;
+    }
+
+    .workspace-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcff;
+    }
+
+    button,
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: .18s ease;
+      font-size: 14px;
+    }
+
+    button:hover,
+    .btn:hover { transform: translateY(-1px); border-color: var(--accent-2); }
+
+    .btn--primary {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    .btn--ghost { background: #fff; }
+
+    .canvas-wrap {
+      position: relative;
+      min-height: 620px;
+      background:
+        radial-gradient(circle at 1px 1px, rgba(49,94,251,.10) 1px, transparent 0) 0 0/24px 24px,
+        linear-gradient(180deg, #f9fbff 0%, #f2f6ff 100%);
+      overflow: hidden;
+    }
+
+    #connections {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .canvas-empty {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--muted);
+      padding: 40px;
+    }
+
+    .canvas-empty strong {
+      display: block;
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .node {
+      position: absolute;
+      width: 250px;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 14px 30px rgba(18, 34, 70, .12);
+      user-select: none;
+    }
+
+    .node.selected {
+      border-color: var(--accent);
+      box-shadow: 0 16px 34px rgba(49,94,251,.18);
+    }
+
+    .node-head {
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+      cursor: move;
+      border-radius: 18px 18px 0 0;
+    }
+
+    .node-head strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 3px;
+    }
+
+    .node-head small {
+      color: var(--muted);
+      font-size: 12px;
+      display: block;
+      line-height: 1.35;
+    }
+
+    .node-remove {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      padding: 0 4px;
+      cursor: pointer;
+    }
+
+    .node-body {
+      padding: 12px 14px 14px;
+    }
+
+    .node-body p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .port {
+      position: absolute;
+      top: 50%;
+      width: var(--port);
+      height: var(--port);
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid white;
+      transform: translateY(-50%);
+      box-shadow: 0 0 0 2px rgba(49,94,251,.18);
+      cursor: pointer;
+    }
+
+    .port.in { left: -6px; }
+    .port.out { right: -6px; }
+    .port.active { box-shadow: 0 0 0 4px rgba(49,94,251,.18); }
+
+    .status {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.55;
+      border: 1px solid var(--line);
+      background: #f8fafe;
+    }
+
+    .status.ok {
+      border-color: rgba(20,128,74,.22);
+      background: rgba(20,128,74,.08);
+      color: #125a37;
+    }
+
+    .status.warn {
+      border-color: rgba(178,106,0,.22);
+      background: rgba(178,106,0,.08);
+      color: #8a5300;
+    }
+
+    .status.error {
+      border-color: rgba(180,35,24,.22);
+      background: rgba(180,35,24,.08);
+      color: #8a1f16;
+    }
+
+    .explain-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .info-box {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fbfcff;
+    }
+
+    .info-box h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .info-box p,
+    .info-box li {
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 14px;
+    }
+
+    .codeblock {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0e1525;
+      color: #eff4ff;
+    }
+
+    .codeblock__bar {
+      background: #11192e;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .codeblock__title {
+      font-size: 13px;
+      color: #d9e4ff;
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,.06);
+      color: white;
+      border-color: rgba(255,255,255,.10);
+      font-size: 12px;
+      padding: 8px 10px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    code { font-family: Consolas, Monaco, monospace; }
+
+    .folder {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+    }
+
+    .legend-row {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .legend-badge {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: #eef3ff;
+      color: var(--accent);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .legend-row strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+
+    .legend-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 21, 37, .55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      width: min(940px, 100%);
+      max-height: min(88vh, 980px);
+      overflow: auto;
+      background: white;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      box-shadow: 0 20px 60px rgba(12, 20, 36, .24);
+    }
+
+    .modal-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: start;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+
+    .modal-head h3 {
+      margin: 0 0 6px;
+      font-size: 20px;
+    }
+
+    .modal-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .modal-body {
+      padding: 18px 20px 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .close-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      padding: 0;
+    }
+
+    @media (max-width: 1420px) {
+      .toolbar {
+        grid-template-columns: 320px 1fr;
+      }
+      .toolbar > :last-child {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .page { padding: 14px; }
+      .toolbar { grid-template-columns: 1fr; }
+      .workspace { min-height: 660px; }
+      .canvas-wrap { min-height: 540px; }
+      .node { width: 230px; }
+      .hero-top { flex-direction: column; }
+      .hero-tools { align-self: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1>Backend Builder – slož si vlastní FastAPI backend</h1>
+          <p>
+            Tento pracovní list funguje jako hra. Z uzlů skládáš strukturu projektu, backendový kód a návrat HTML stránky.
+            Každý uzel představuje jednu důležitou část backendu. Po správném propojení se vygeneruje reálná struktura složek,
+            instalační příkazy i výsledný Python kód.
+          </p>
+        </div>
+        <div class="hero-tools">
+          <button class="hero-icon-btn" id="helpBtn" title="Jak s listem pracovat">?</button>
+          <button class="hero-icon-btn" id="glossaryBtn" title="Slovník pojmů">📘</button>
+        </div>
+      </div>
+      <div class="pill-row">
+        <span class="pill">FastAPI</span>
+        <span class="pill">SQLite</span>
+        <span class="pill">API</span>
+        <span class="pill">HTML + static files</span>
+        <span class="pill">drag &amp; connect</span>
+        <span class="pill">struktura projektu</span>
+      </div>
+    </section>
+
+    <div class="toolbar">
+      <aside class="panel">
+        <div class="panel__head">
+          <h2>Mise a uzly</h2>
+          <p>Vyber si misi, přečti si zadání a z levého panelu přidávej uzly na pracovní plochu.</p>
+        </div>
+        <div class="panel__body">
+          <div class="mission-switch" id="missionSwitch"></div>
+
+          <div class="mission-task" id="missionTask"></div>
+
+          <div class="toolbox-grid" id="toolbox"></div>
+
+          <div class="status warn" id="statusBox">Vyber misi a začni stavět backend.</div>
+        </div>
+      </aside>
+
+      <main class="panel workspace">
+        <div class="workspace-controls">
+          <button class="btn btn--primary" id="checkBtn">Zkontrolovat řešení</button>
+          <button class="btn btn--ghost" id="resetBtn">Vyčistit plochu</button>
+          <button class="btn btn--ghost" id="hintBtn">Nápověda</button>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <svg id="connections"></svg>
+          <div class="canvas-empty" id="emptyState">
+            <div>
+              <strong>Pracovní plocha je zatím prázdná</strong>
+              Přidej první uzel z levého panelu. Začni tím, co dává smysl: obvykle kořen projektu nebo importy.
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="panel">
+        <div class="panel__head">
+          <h3>Vysvětlení a výsledky</h3>
+          <p>Po kliknutí na uzel se zobrazí detailní vysvětlení. Po správném řešení se vygeneruje výsledný výstup.</p>
+        </div>
+        <div class="panel__body explain-card">
+          <div class="info-box" id="selectedInfo">
+            <h4>Vybraný uzel</h4>
+            <p>Klikni na některý uzel na pracovní ploše. Zobrazí se jeho role, smysl a odpovídající kus kódu.</p>
+          </div>
+
+          <div class="info-box">
+            <h4>Jak se vyhodnocuje</h4>
+            <div class="legend">
+              <div class="legend-row">
+                <div class="legend-badge">1</div>
+                <div>
+                  <strong>Správné uzly</strong>
+                  <span>Na ploše musí být přesně ty části, které mise potřebuje.</span>
+                </div>
+              </div>
+              <div class="legend-row">
+                <div class="legend-badge">2</div>
+                <div>
+                  <strong>Správné vztahy</strong>
+                  <span>Uzly musí být propojené tak, aby dávaly smysl jako projekt nebo backend.</span>
+                </div>
+              </div>
+              <div class="legend-row">
+                <div class="legend-badge">3</div>
+                <div>
+                  <strong>Výsledný výstup</strong>
+                  <span>Po úspěchu se dole objeví strom složek, instalační příkazy a hotový kód.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <h4>Projektová struktura</h4>
+            <div class="folder" id="structurePreview">Zatím není vygenerovaná struktura projektu.</div>
+          </div>
+
+          <div class="info-box">
+            <h4>Průběžná ukázka aktuální mise</h4>
+            <div id="missionReferenceOutput">
+              <p>Zde se zobrazí průběžná ukázka kódu a struktury pro právě vybranou misi.</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <h4>Výsledek po správném složení</h4>
+            <div id="generatedOutput">
+              <p>Po správném složení aktuální mise se zde objeví finální výstup.</p>
+            </div>
+          </div>
+
+          <p class="footer-note">
+            Doporučený postup: nejdřív správně slož strukturu projektu, potom JSON backend a nakonec HTML stránku se static files.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="helpModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3>Jak pracovat s tímto listem</h3>
+          <p>Tento list je pracovní hra. Neslouží jen ke klikání, ale k pochopení, jak spolu souvisí složky, instalace, backend a šablony.</p>
+        </div>
+        <button class="close-btn" data-close="helpModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-box">
+          <h4>1. Co je cílem tohoto listu</h4>
+          <p>
+            Cílem je složit vlastní backend po vrstvách. Nejprve se skládá struktura projektu, potom backend vracející JSON
+            a nakonec backend, který načítá HTML šablonu a static files. Výstupem nemá být jen „správně naklikaná hra“,
+            ale pochopení toho, kam patří <code>.venv</code>, kde leží <code>main.py</code>, co vrací route a jak FastAPI obsluhuje stránku.
+          </p>
+        </div>
+
+        <div class="info-box">
+          <h4>2. Jak se tento list ovládá</h4>
+          <ol class="steps">
+            <li>V levém panelu vyber misi.</li>
+            <li>Přečti si zadání mise.</li>
+            <li>Kliknutím na uzel ho přidej na plochu.</li>
+            <li>Uzel můžeš myší přesouvat.</li>
+            <li>Klikni na pravý výstupní bod jednoho uzlu a potom na levý vstupní bod druhého uzlu.</li>
+            <li>Takto vytvoříš vztah mezi dvěma částmi backendu.</li>
+            <li>Průběžně si čti vysvětlení v pravém panelu.</li>
+            <li>Až budeš mít hotovo, klikni na <strong>Zkontrolovat řešení</strong>.</li>
+          </ol>
+        </div>
+
+        <div class="info-box">
+          <h4>3. Jak poznat, že je řešení správně</h4>
+          <ul class="bullets">
+            <li>Na pracovní ploše musí být správné uzly.</li>
+            <li>Uzly musí být propojené ve správných vztazích.</li>
+            <li>Pokud je řešení správně, stavový box zezelená a v pravém panelu se objeví výsledný výstup.</li>
+            <li>Pokud řešení správně není, stavový box napoví, co je špatně.</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <h4>4. Aktuální zadání</h4>
+          <div id="helpCurrentTask">Vyber misi a zde se zobrazí její zadání.</div>
+        </div>
+
+        <div class="info-box">
+          <h4>5. Co je výstupem jednotlivých misí</h4>
+          <ul class="bullets">
+            <li><strong>Mise 1:</strong> vygeneruje strom složek a souborů projektu + instalační příkazy.</li>
+            <li><strong>Mise 2:</strong> vygeneruje <code>main.py</code> pro JSON endpoint nad SQLite databází.</li>
+            <li><strong>Mise 3:</strong> vygeneruje <code>main.py</code> pro HTML šablonu a static files + ukázku <code>index.html</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="glossaryModal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3>Slovník pojmů</h3>
+          <p>Základní pojmy, které se v tomto listu objevují opakovaně.</p>
+        </div>
+        <button class="close-btn" data-close="glossaryModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-box"><h4>Backend</h4><p>Část aplikace, která běží na serveru. Zpracovává logiku, komunikuje s databází a vrací odpovědi.</p></div>
+        <div class="info-box"><h4>Route</h4><p>Adresa backendu, například <code>/</code> nebo <code>/reservations</code>. Každá route obvykle spouští určitou Python funkci.</p></div>
+        <div class="info-box"><h4>JSON</h4><p>Textový formát pro předávání dat. Ve FastAPI je to výchozí forma odpovědi, když vrátíš Python slovník nebo seznam.</p></div>
+        <div class="info-box"><h4>Template</h4><p>HTML šablona, do které backend může posílat data. Ve FastAPI se často používá Jinja2.</p></div>
+        <div class="info-box"><h4>Static files</h4><p>Statické soubory jako CSS, JavaScript nebo obrázky. Ve FastAPI se připojují přes <code>app.mount("/static", ...)</code>.</p></div>
+        <div class="info-box"><h4>.venv</h4><p>Virtuální prostředí projektu. Drží Python balíčky odděleně od ostatních projektů.</p></div>
+        <div class="info-box"><h4>Uvicorn</h4><p>ASGI server, který FastAPI aplikaci skutečně rozběhne a zpřístupní ji na adrese a portu.</p></div>
+        <div class="info-box"><h4>SQLite</h4><p>Souborová databáze. V našem projektu je uložená například v souboru <code>reservations.db</code>.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const nodeCatalog = {
+      // structure mission
+      root_project: {
+        title: 'Kořen projektu', icon: '🗂️', tag: 'struktura',
+        short: 'Hlavní složka, do které patří backend.',
+        explain: 'Tohle je nejvyšší úroveň projektu. Právě sem patří main.py, databáze, templates, static i .venv. Když je struktura projektu nepřehledná, později se ztrácí backend, static files i šablony.',
+        code: 'backend_project/'
+      },
+      folder_venv: {
+        title: 'Složka .venv', icon: '📦', tag: 'struktura',
+        short: 'Virtuální prostředí projektu.',
+        explain: 'Do .venv se instalují balíčky pro tento konkrétní projekt. Tady skončí FastAPI, Uvicorn a další závislosti. Není to místo pro main.py ani pro tvoje HTML.',
+        code: '.venv/'
+      },
+      file_main: {
+        title: 'Soubor main.py', icon: '🐍', tag: 'struktura',
+        short: 'Hlavní backendový soubor.',
+        explain: 'V main.py vzniká objekt app = FastAPI() a route jako @app.get("/"). Tento soubor má být v kořeni projektu, ne uvnitř .venv.',
+        code: 'main.py'
+      },
+      file_db: {
+        title: 'Soubor reservations.db', icon: '🗄️', tag: 'struktura',
+        short: 'SQLite databáze se všemi rezervacemi.',
+        explain: 'SQLite ukládá data do jediného souboru. Pokud backend i konzolová aplikace pracují se stejnou databází, sdílejí stejná data.',
+        code: 'reservations.db'
+      },
+      folder_templates: {
+        title: 'Složka templates', icon: '🧾', tag: 'struktura',
+        short: 'Sem patří HTML šablony.',
+        explain: 'Do složky templates patří soubory jako index.html nebo reservations.html. Backend je pak načítá přes Jinja2Templates.',
+        code: 'templates/'
+      },
+      file_index: {
+        title: 'Soubor index.html', icon: '🌐', tag: 'struktura',
+        short: 'HTML šablona hlavní stránky.',
+        explain: 'Tohle je skutečná stránka, která se po načtení route může zobrazit v prohlížeči. Sem patří odkaz na CSS i JavaScript.',
+        code: 'index.html'
+      },
+      folder_static: {
+        title: 'Složka static', icon: '📁', tag: 'struktura',
+        short: 'Sem patří CSS, JavaScript a obrázky.',
+        explain: 'FastAPI umí tuto složku zpřístupnit přes app.mount("/static", ...). Browser si z ní načte soubory, které stránka potřebuje.',
+        code: 'static/'
+      },
+      folder_css: {
+        title: 'Složka css', icon: '🎨', tag: 'struktura',
+        short: 'Podsložka pro stylování stránky.',
+        explain: 'Do této složky patří například style.css. Ve stránce se pak načítá cestou /static/css/style.css.',
+        code: 'css/'
+      },
+      folder_js: {
+        title: 'Složka js', icon: '⚙️', tag: 'struktura',
+        short: 'Podsložka pro JavaScript.',
+        explain: 'Sem patří JavaScript soubory, například app.js. Ve stránce se pak načítají přes /static/js/app.js.',
+        code: 'js/'
+      },
+      file_style: {
+        title: 'Soubor style.css', icon: '🖌️', tag: 'struktura',
+        short: 'Hlavní CSS soubor stránky.',
+        explain: 'Tady se zapisují styly stránky. Browser si je načte zvlášť, proto musí být ve správné static složce.',
+        code: 'style.css'
+      },
+      file_appjs: {
+        title: 'Soubor app.js', icon: '🧠', tag: 'struktura',
+        short: 'Hlavní JavaScript stránky.',
+        explain: 'Sem patří chování tlačítek, formulářů a další interaktivita. Stejně jako CSS je to soubor pro frontend.',
+        code: 'app.js'
+      },
+      distract_assets: {
+        title: 'Složka assets', icon: '🚫', tag: 'navíc',
+        short: 'V této misi se nepoužívá.',
+        explain: 'Assets nejsou samy o sobě chyba, ale v tomto pracovním listu nepatří mezi povinné části řešení.',
+        code: 'assets/'
+      },
+
+      // json mission
+      import_sqlite: {
+        title: 'Import sqlite3', icon: '🗄️', tag: 'kód',
+        short: 'Načte modul pro SQLite databázi.',
+        explain: 'Bez sqlite3 backend databázi neotevře. Tento import je základ pro připojení k reservations.db.',
+        code: 'import sqlite3'
+      },
+      import_path: {
+        title: 'Import Path', icon: '📍', tag: 'kód',
+        short: 'Načte Path pro práci s cestami.',
+        explain: 'Path pomáhá přesně určit, kde leží databáze. Je to bezpečnější než spoléhat na náhodnou pracovní složku terminálu.',
+        code: 'from pathlib import Path'
+      },
+      import_fastapi: {
+        title: 'Import FastAPI', icon: '⚡', tag: 'kód',
+        short: 'Načte framework FastAPI.',
+        explain: 'Tímto importem se do kódu dostane třída FastAPI, ze které se pak vytvoří objekt aplikace.',
+        code: 'from fastapi import FastAPI'
+      },
+      db_file: {
+        title: 'Proměnná DB_FILE', icon: '📄', tag: 'kód',
+        short: 'Určí cestu k reservations.db.',
+        explain: 'Tahle proměnná ukazuje na databázi ve stejné složce jako main.py. Backend díky tomu ví, kde má SQLite soubor hledat.',
+        code: 'DB_FILE = Path(__file__).resolve().with_name("reservations.db")'
+      },
+      create_app: {
+        title: 'Vytvoření app', icon: '🧩', tag: 'kód',
+        short: 'Vznikne objekt backendu.',
+        explain: 'app = FastAPI() vytvoří objekt aplikace. Od této chvíle můžeš na app navazovat route, static files nebo templates.',
+        code: 'app = FastAPI()'
+      },
+      function_connect: {
+        title: 'Funkce connect()', icon: '🔌', tag: 'kód',
+        short: 'Otevře spojení s databází.',
+        explain: 'connect() vrací otevřené spojení s SQLite. Zde se často nastavuje i row_factory, aby šly řádky převést na slovníky.',
+        code: 'def connect():\n    conn = sqlite3.connect(str(DB_FILE))\n    conn.row_factory = sqlite3.Row\n    return conn'
+      },
+      function_fetch: {
+        title: 'Funkce fetch_reservations()', icon: '📥', tag: 'kód',
+        short: 'Načte rezervace z databáze.',
+        explain: 'Tato funkce otevře DB, provede SELECT, načte výsledky, zavře spojení a vrátí data jako seznam slovníků.',
+        code: 'def fetch_reservations():\n    conn = connect()\n    rows = conn.execute("""\n        SELECT id, name, date, arrival, departure\n        FROM reservations\n        ORDER BY date ASC, arrival ASC;\n    """).fetchall()\n    conn.close()\n    return [dict(row) for row in rows]'
+      },
+      route_reservations: {
+        title: 'Route /reservations', icon: '🛣️', tag: 'kód',
+        short: 'Definuje adresu endpointu.',
+        explain: 'Tento dekorátor říká FastAPI: když přijde GET požadavek na /reservations, použij funkci napsanou pod ním.',
+        code: '@app.get("/reservations")'
+      },
+      function_reservations: {
+        title: 'Funkce reservations()', icon: '📤', tag: 'kód',
+        short: 'Vrátí data z fetch_reservations().',
+        explain: 'Tato funkce se spustí při otevření adresy /reservations. Výsledek fetch_reservations() FastAPI automaticky vrátí jako JSON.',
+        code: 'def reservations():\n    return fetch_reservations()'
+      },
+      distract_redirect: {
+        title: 'RedirectResponse', icon: '↪️', tag: 'navíc',
+        short: 'V této misi se nepoužívá.',
+        explain: 'Přesměrování může být užitečné jindy, ale JSON endpoint s výpisem rezervací ho nepotřebuje.',
+        code: 'return RedirectResponse("/reservations")'
+      },
+      distract_post: {
+        title: 'POST route', icon: '⛔', tag: 'navíc',
+        short: 'Tato mise neřeší vytváření rezervace.',
+        explain: 'POST route by dávala smysl pro vytváření dat. Tady ale zatím jen čteme existující rezervace.',
+        code: '@app.post("/reservations")'
+      },
+
+      // html mission
+      import_request: {
+        title: 'Import Request', icon: '📨', tag: 'kód',
+        short: 'Načte Request pro šablony.',
+        explain: 'Jinja2Templates ve FastAPI potřebují objekt Request, aby mohly správně vracet TemplateResponse.',
+        code: 'from fastapi import FastAPI, Request'
+      },
+      import_templates: {
+        title: 'Import Jinja2Templates', icon: '🧾', tag: 'kód',
+        short: 'Načte práci se šablonami.',
+        explain: 'Jinja2Templates propojí FastAPI s HTML soubory ve složce templates.',
+        code: 'from fastapi.templating import Jinja2Templates'
+      },
+      import_staticfiles: {
+        title: 'Import StaticFiles', icon: '📂', tag: 'kód',
+        short: 'Načte práci se static files.',
+        explain: 'StaticFiles umožní zpřístupnit CSS, JS a další soubory přes veřejnou cestu /static.',
+        code: 'from fastapi.staticfiles import StaticFiles'
+      },
+      mount_static: {
+        title: 'app.mount("/static", ...)', icon: '🪝', tag: 'kód',
+        short: 'Připojí složku static k backendu.',
+        explain: 'Tímto řádkem řekneš FastAPI, že soubory ve složce static mají být veřejně dostupné přes adresu /static.',
+        code: 'app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")'
+      },
+      create_templates: {
+        title: 'Jinja2Templates(...)', icon: '📚', tag: 'kód',
+        short: 'Nastaví složku templates.',
+        explain: 'Tento objekt bude hledat HTML soubory ve složce templates a vracet je jako TemplateResponse.',
+        code: 'templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))'
+      },
+      route_home: {
+        title: 'Route /', icon: '🏠', tag: 'kód',
+        short: 'Definuje hlavní stránku.',
+        explain: 'Když někdo otevře adresu /, FastAPI použije následující funkci.',
+        code: '@app.get("/")'
+      },
+      function_home: {
+        title: 'Funkce home(request)', icon: '🌍', tag: 'kód',
+        short: 'Obslouží hlavní stránku.',
+        explain: 'Funkce přijme Request a vrátí šablonu index.html. Backend tím přestane vracet JSON a začne vracet skutečnou HTML stránku.',
+        code: 'def home(request: Request):\n    return templates.TemplateResponse(\n        request=request,\n        name="index.html",\n        context={}\n    )'
+      },
+      return_template: {
+        title: 'index.html s CSS a JS', icon: '🖥️', tag: 'kód',
+        short: 'Ukázka výsledné šablony.',
+        explain: 'Tento uzel připomíná, že HTML stránka může odkazovat na /static/css/style.css a /static/js/app.js. Browser je načte zvlášť jako další požadavky.',
+        code: '<link rel="stylesheet" href="/static/css/style.css">\n<script src="/static/js/app.js"><\/script>'
+      },
+      distract_raw_html: {
+        title: 'Raw HTML string', icon: '🧪', tag: 'navíc',
+        short: 'Zde nechceme psát HTML přímo do Python řetězce.',
+        explain: 'Vrátit raw HTML jde, ale tato mise je o šablonách a static files. Proto chceme templates a static, ne dlouhý HTML string v Pythonu.',
+        code: 'return "<h1>Ahoj</h1>"'
+      }
+    };
+
+    const missions = {
+      structure: {
+        title: 'Mise 1 – struktura projektu',
+        subtitle: 'Slož backendový projekt po složkách a souborech.',
+        taskTitle: 'Zadání mise',
+        task: 'Poskládej strom projektu pro backend s FastAPI, SQLite, HTML šablonami a static files. Výsledkem má být reálná struktura složek: .venv, main.py, reservations.db, templates/index.html, static/css/style.css a static/js/app.js.',
+        outcome: ['Správný strom složek a souborů.', 'Příkazy pro vytvoření .venv a instalaci FastAPI.', 'Pochopení, co kam v projektu patří.'],
+        toolbox: ['root_project','folder_venv','file_main','file_db','folder_templates','file_index','folder_static','folder_css','folder_js','file_style','file_appjs','distract_assets'],
+        requiredNodes: ['root_project','folder_venv','file_main','file_db','folder_templates','file_index','folder_static','folder_css','folder_js','file_style','file_appjs'],
+        expectedEdges: [
+          ['root_project','folder_venv'],
+          ['root_project','file_main'],
+          ['root_project','file_db'],
+          ['root_project','folder_templates'],
+          ['folder_templates','file_index'],
+          ['root_project','folder_static'],
+          ['folder_static','folder_css'],
+          ['folder_css','file_style'],
+          ['folder_static','folder_js'],
+          ['folder_js','file_appjs']
+        ],
+        output() {
+          return {
+            structure: `backend_project/\n├── .venv/\n├── main.py\n├── reservations.db\n├── templates/\n│   └── index.html\n└── static/\n    ├── css/\n    │   └── style.css\n    └── js/\n        └── app.js`,
+            codeBlocks: [
+              {
+                title: 'Windows PowerShell – vytvoření prostředí a instalace',
+                content: `py -m venv .venv\n.\\.venv\\Scripts\\Activate.ps1\npy -m pip install "fastapi[standard]"`
+              }
+            ]
+          };
+        },
+        hint: 'Začni kořenem projektu. Z něj musí vést .venv, main.py, reservations.db, templates a static. Teprve potom rozvětvi templates a static dál.'
+      },
+      json: {
+        title: 'Mise 2 – JSON backend',
+        subtitle: 'Vrať seznam rezervací z databáze jako JSON.',
+        taskTitle: 'Zadání mise',
+        task: 'Slož minimální backend, který otevře SQLite databázi reservations.db, načte z tabulky reservations všechny rezervace a vrátí je na route /reservations jako JSON.',
+        outcome: ['main.py pro JSON endpoint.', 'Pochopení cesty k databázi.', 'Pochopení funkce connect(), fetch_reservations() a route.'],
+        toolbox: ['import_sqlite','import_path','import_fastapi','db_file','create_app','function_connect','function_fetch','route_reservations','function_reservations','distract_post','distract_redirect'],
+        requiredNodes: ['import_sqlite','import_path','import_fastapi','db_file','create_app','function_connect','function_fetch','route_reservations','function_reservations'],
+        expectedEdges: [
+          ['import_path','db_file'],
+          ['import_sqlite','function_connect'],
+          ['db_file','function_connect'],
+          ['function_connect','function_fetch'],
+          ['create_app','route_reservations'],
+          ['route_reservations','function_reservations'],
+          ['function_fetch','function_reservations']
+        ],
+        output() {
+          return {
+            structure: `backend_project/\n├── .venv/\n├── main.py\n└── reservations.db`,
+            codeBlocks: [
+              {
+                title: 'main.py – JSON backend',
+                content: `import sqlite3\nfrom pathlib import Path\n\nfrom fastapi import FastAPI\n\nDB_FILE = Path(__file__).resolve().with_name("reservations.db")\n\napp = FastAPI()\n\n\ndef connect():\n    conn = sqlite3.connect(str(DB_FILE))\n    conn.row_factory = sqlite3.Row\n    return conn\n\n\ndef fetch_reservations():\n    conn = connect()\n    rows = conn.execute("""\n        SELECT id, name, date, arrival, departure\n        FROM reservations\n        ORDER BY date ASC, arrival ASC;\n    """).fetchall()\n    conn.close()\n    return [dict(row) for row in rows]\n\n\n@app.get("/reservations")\ndef reservations():\n    return fetch_reservations()`
+              },
+              {
+                title: 'Spuštění serveru',
+                content: `.\\.venv\\Scripts\\python.exe -m uvicorn main:app --reload`
+              }
+            ]
+          };
+        },
+        hint: 'Nejdřív musí existovat importy a cesta k databázi. connect() potřebuje sqlite3 i DB_FILE. reservations() vrací výsledek fetch_reservations().' 
+      },
+      html: {
+        title: 'Mise 3 – HTML + static files',
+        subtitle: 'Vrať HTML šablonu a připoj CSS i JavaScript.',
+        taskTitle: 'Zadání mise',
+        task: 'Slož backend, který na route / vrátí HTML šablonu index.html, připojí static files a bude počítat s tím, že stránka odkazuje na /static/css/style.css a /static/js/app.js.',
+        outcome: ['main.py pro templates a static files.', 'Ukázka index.html.', 'Pochopení rozdílu mezi JSON a HTML odpovědí.'],
+        toolbox: ['import_path','import_request','import_templates','import_staticfiles','db_file','create_app','mount_static','create_templates','route_home','function_home','return_template','distract_raw_html'],
+        requiredNodes: ['import_path','import_request','import_templates','import_staticfiles','db_file','create_app','mount_static','create_templates','route_home','function_home','return_template'],
+        expectedEdges: [
+          ['import_path','db_file'],
+          ['create_app','mount_static'],
+          ['create_app','route_home'],
+          ['import_templates','create_templates'],
+          ['route_home','function_home'],
+          ['create_templates','function_home'],
+          ['function_home','return_template'],
+          ['mount_static','return_template']
+        ],
+        output() {
+          return {
+            structure: `backend_project/\n├── .venv/\n├── main.py\n├── reservations.db\n├── templates/\n│   └── index.html\n└── static/\n    ├── css/\n    │   └── style.css\n    └── js/\n        └── app.js`,
+            codeBlocks: [
+              {
+                title: 'main.py – HTML + static files',
+                content: `from pathlib import Path\n\nfrom fastapi import FastAPI, Request\nfrom fastapi.staticfiles import StaticFiles\nfrom fastapi.templating import Jinja2Templates\n\nBASE_DIR = Path(__file__).resolve().parent\n\napp = FastAPI()\n\napp.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")\ntemplates = Jinja2Templates(directory=str(BASE_DIR / "templates"))\n\n\n@app.get("/")\ndef home(request: Request):\n    return templates.TemplateResponse(\n        request=request,\n        name="index.html",\n        context={}\n    )`
+              },
+              {
+                title: 'templates/index.html',
+                content: `<!DOCTYPE html>\n<html lang="cs">\n<head>\n  <meta charset="UTF-8">\n  <title>Rezervační systém</title>\n  <link rel="stylesheet" href="/static/css/style.css">\n</head>\n<body>\n  <h1>Rezervační systém</h1>\n  <button id="btn">Klikni</button>\n  <script src="/static/js/app.js"><\/script>\n</body>\n</html>`
+              },
+              {
+                title: 'Spuštění serveru',
+                content: `.\\.venv\\Scripts\\python.exe -m uvicorn main:app --reload`
+              }
+            ]
+          };
+        },
+        hint: 'Route / musí vést na funkci home(request). Ta vrací TemplateResponse. StaticFiles a templates musí být připravené dřív, než backend začne stránku používat.'
+      }
+    };
+
+    const state = {
+      mission: 'structure',
+      nodes: [],
+      edges: [],
+      nextId: 1,
+      selectedNodeId: null,
+      activePort: null,
+      solved: { structure: false, json: false, html: false }
+    };
+
+    const missionSwitch = document.getElementById('missionSwitch');
+    const missionTask = document.getElementById('missionTask');
+    const toolbox = document.getElementById('toolbox');
+    const statusBox = document.getElementById('statusBox');
+    const canvasWrap = document.getElementById('canvasWrap');
+    const connections = document.getElementById('connections');
+    const emptyState = document.getElementById('emptyState');
+    const selectedInfo = document.getElementById('selectedInfo');
+    const missionReferenceOutput = document.getElementById('missionReferenceOutput');
+    const generatedOutput = document.getElementById('generatedOutput');
+    const structurePreview = document.getElementById('structurePreview');
+    const helpCurrentTask = document.getElementById('helpCurrentTask');
+
+    function missionData() {
+      return missions[state.mission];
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+      document.getElementById(id).setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+      document.getElementById(id).setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('helpBtn').addEventListener('click', () => openModal('helpModal'));
+    document.getElementById('glossaryBtn').addEventListener('click', () => openModal('glossaryModal'));
+    document.querySelectorAll('[data-close]').forEach(btn => {
+      btn.addEventListener('click', () => closeModal(btn.dataset.close));
+    });
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) closeModal(backdrop.id);
+      });
+    });
+
+    function renderMissionButtons() {
+      missionSwitch.innerHTML = '';
+      Object.entries(missions).forEach(([key, mission]) => {
+        const btn = document.createElement('button');
+        btn.className = `mission-btn ${state.mission === key ? 'active' : ''}`;
+        btn.innerHTML = `<strong>${mission.title}</strong><span>${mission.subtitle}</span>`;
+        btn.addEventListener('click', () => switchMission(key));
+        missionSwitch.appendChild(btn);
+      });
+    }
+
+    function renderMissionTask() {
+      const mission = missionData();
+      missionTask.innerHTML = `
+        <h4>${mission.taskTitle}</h4>
+        <p>${mission.task}</p>
+        <ul class="checklist">${mission.outcome.map(item => `<li>${item}</li>`).join('')}</ul>
+      `;
+      helpCurrentTask.innerHTML = `
+        <strong>${mission.title}</strong>
+        <p style="margin:8px 0 0;color:var(--muted);line-height:1.6;">${mission.task}</p>
+      `;
+    }
+
+    function renderToolbox() {
+      toolbox.innerHTML = '';
+      missionData().toolbox.forEach(type => {
+        const def = nodeCatalog[type];
+        const item = document.createElement('div');
+        item.className = 'toolbox-item';
+        item.innerHTML = `
+          <div class="toolbox-icon">${def.icon}</div>
+          <div>
+            <strong>${def.title}</strong>
+            <span>${def.short}</span>
+          </div>
+          <span class="tag">${def.tag}</span>
+        `;
+        item.addEventListener('click', () => addNode(type));
+        toolbox.appendChild(item);
+      });
+    }
+
+    function switchMission(key) {
+      state.mission = key;
+      state.nodes = [];
+      state.edges = [];
+      state.nextId = 1;
+      state.selectedNodeId = null;
+      state.activePort = null;
+      renderMissionButtons();
+      renderMissionTask();
+      renderToolbox();
+      renderCanvas();
+      renderSelectedInfo();
+      renderOutputs();
+      status('Vybraná mise čeká na řešení. Nejprve si přečti zadání a přidej první uzel.', 'warn');
+    }
+
+    function status(text, kind='warn') {
+      statusBox.className = `status ${kind}`;
+      statusBox.textContent = text;
+    }
+
+    function addNode(type) {
+      const existing = state.nodes.find(n => n.type === type);
+      if (existing) {
+        state.selectedNodeId = existing.id;
+        renderCanvas();
+        renderSelectedInfo();
+        status('Tento uzel už na ploše je. Vybraný uzel byl zvýrazněn.', 'warn');
+        return;
+      }
+
+      const col = state.nodes.length % 3;
+      const row = Math.floor(state.nodes.length / 3);
+      state.nodes.push({
+        id: state.nextId++,
+        type,
+        x: 46 + col * 270,
+        y: 42 + row * 152
+      });
+      state.selectedNodeId = state.nodes[state.nodes.length - 1].id;
+      renderCanvas();
+      renderSelectedInfo();
+    }
+
+    function removeNode(id) {
+      state.nodes = state.nodes.filter(n => n.id !== id);
+      state.edges = state.edges.filter(e => e.from !== id && e.to !== id);
+      if (state.selectedNodeId === id) state.selectedNodeId = null;
+      renderCanvas();
+      renderSelectedInfo();
+    }
+
+    function renderCanvas() {
+      connections.innerHTML = '';
+      canvasWrap.querySelectorAll('.node').forEach(n => n.remove());
+      emptyState.style.display = state.nodes.length ? 'none' : 'grid';
+
+      state.nodes.forEach(node => {
+        const def = nodeCatalog[node.type];
+        const el = document.createElement('div');
+        el.className = `node ${state.selectedNodeId === node.id ? 'selected' : ''}`;
+        el.style.left = `${node.x}px`;
+        el.style.top = `${node.y}px`;
+        el.dataset.id = node.id;
+        el.innerHTML = `
+          <div class="node-head">
+            <div class="node-icon">${def.icon}</div>
+            <div>
+              <strong>${def.title}</strong>
+              <small>${def.short}</small>
+            </div>
+            <button class="node-remove" title="Odstranit uzel">×</button>
+          </div>
+          <div class="node-body">
+            <p>${def.explain.slice(0, 104)}${def.explain.length > 104 ? '…' : ''}</p>
+          </div>
+          <div class="port in ${state.activePort && state.activePort.nodeId === node.id && state.activePort.kind === 'in' ? 'active' : ''}" data-kind="in"></div>
+          <div class="port out ${state.activePort && state.activePort.nodeId === node.id && state.activePort.kind === 'out' ? 'active' : ''}" data-kind="out"></div>
+        `;
+
+        const head = el.querySelector('.node-head');
+        const removeBtn = el.querySelector('.node-remove');
+        removeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeNode(node.id);
+        });
+
+        el.addEventListener('click', () => {
+          state.selectedNodeId = node.id;
+          renderCanvas();
+          renderSelectedInfo();
+        });
+
+        el.querySelectorAll('.port').forEach(port => {
+          port.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const kind = port.dataset.kind;
+            if (!state.activePort) {
+              state.activePort = { nodeId: node.id, kind };
+              renderCanvas();
+              return;
+            }
+
+            const first = state.activePort;
+            state.activePort = null;
+            if (first.nodeId === node.id) {
+              renderCanvas();
+              return;
+            }
+
+            if (first.kind === 'out' && kind === 'in') connectNodes(first.nodeId, node.id);
+            else if (first.kind === 'in' && kind === 'out') connectNodes(node.id, first.nodeId);
+            renderCanvas();
+          });
+        });
+
+        startDrag(head, node.id);
+        canvasWrap.appendChild(el);
+      });
+
+      drawEdges();
+    }
+
+    function startDrag(handle, nodeId) {
+      let startX = 0, startY = 0, originX = 0, originY = 0, dragging = false;
+      handle.addEventListener('mousedown', (e) => {
+        dragging = true;
+        const node = state.nodes.find(n => n.id === nodeId);
+        startX = e.clientX;
+        startY = e.clientY;
+        originX = node.x;
+        originY = node.y;
+        document.body.style.userSelect = 'none';
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+
+      function onMove(e) {
+        if (!dragging) return;
+        const node = state.nodes.find(n => n.id === nodeId);
+        node.x = Math.max(14, originX + (e.clientX - startX));
+        node.y = Math.max(14, originY + (e.clientY - startY));
+        renderCanvas();
+      }
+
+      function onUp() {
+        dragging = false;
+        document.body.style.userSelect = '';
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      }
+    }
+
+    function connectNodes(fromId, toId) {
+      if (state.edges.some(e => e.from === fromId && e.to === toId)) return;
+      state.edges.push({ from: fromId, to: toId });
+    }
+
+    function drawEdges() {
+      const wrapRect = canvasWrap.getBoundingClientRect();
+      state.edges.forEach(edge => {
+        const fromEl = canvasWrap.querySelector(`.node[data-id="${edge.from}"] .port.out`);
+        const toEl = canvasWrap.querySelector(`.node[data-id="${edge.to}"] .port.in`);
+        if (!fromEl || !toEl) return;
+
+        const fr = fromEl.getBoundingClientRect();
+        const tr = toEl.getBoundingClientRect();
+        const x1 = fr.left + fr.width / 2 - wrapRect.left;
+        const y1 = fr.top + fr.height / 2 - wrapRect.top;
+        const x2 = tr.left + tr.width / 2 - wrapRect.left;
+        const y2 = tr.top + tr.height / 2 - wrapRect.top;
+        const dx = Math.max(80, Math.abs(x2 - x1) * 0.45);
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', '#315efb');
+        path.setAttribute('stroke-width', '3');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('opacity', '.92');
+        connections.appendChild(path);
+      });
+    }
+
+    function renderSelectedInfo() {
+      const node = state.nodes.find(n => n.id === state.selectedNodeId);
+      if (!node) {
+        selectedInfo.innerHTML = '<h4>Vybraný uzel</h4><p>Klikni na některý uzel na pracovní ploše. Zobrazí se jeho role, smysl a odpovídající kus kódu.</p>';
+        return;
+      }
+      const def = nodeCatalog[node.type];
+      selectedInfo.innerHTML = `
+        <h4>${def.icon} ${def.title}</h4>
+        <p>${def.explain}</p>
+        <div class="codeblock" style="margin-top:12px;">
+          <div class="codeblock__bar">
+            <strong class="codeblock__title">Ukázka</strong>
+            <button class="copy-btn" data-copy="selected-code">Kopírovat</button>
+          </div>
+          <pre id="selected-code"><code>${escapeHtml(def.code)}</code></pre>
+        </div>
+      `;
+      selectedInfo.querySelector('[data-copy="selected-code"]').addEventListener('click', () => copyPre('selected-code'));
+    }
+
+    function nodeTypesOnCanvas() {
+      return state.nodes.map(n => n.type);
+    }
+
+    function edgesAsTypes() {
+      const byId = Object.fromEntries(state.nodes.map(n => [n.id, n.type]));
+      return state.edges.map(e => `${byId[e.from]}=>${byId[e.to]}`);
+    }
+
+    function checkSolution() {
+      const mission = missionData();
+      const currentTypes = nodeTypesOnCanvas();
+      const required = mission.requiredNodes;
+      const missing = required.filter(t => !currentTypes.includes(t));
+      const extras = currentTypes.filter(t => !required.includes(t));
+      const expectedEdges = mission.expectedEdges.map(([a,b]) => `${a}=>${b}`);
+      const currentEdges = edgesAsTypes();
+      const missingEdges = expectedEdges.filter(e => !currentEdges.includes(e));
+      const extraEdges = currentEdges.filter(e => !expectedEdges.includes(e));
+
+      if (missing.length) {
+        status(`Chybí uzly: ${missing.map(t => nodeCatalog[t].title).join(', ')}.`, 'error');
+        return;
+      }
+      if (extras.length) {
+        status(`Na ploše jsou navíc uzly, které tato mise nepotřebuje: ${extras.map(t => nodeCatalog[t].title).join(', ')}.`, 'error');
+        return;
+      }
+      if (missingEdges.length) {
+        status('Uzly jsou na ploše, ale některé správné vztahy mezi nimi ještě chybí. Zkus znovu promyslet propojení.', 'error');
+        return;
+      }
+      if (extraEdges.length) {
+        status('Některé vazby mezi uzly jsou navíc nebo vedou špatným směrem. Odstraň je vymazáním uzlu a zkus to znovu čistě.', 'error');
+        return;
+      }
+
+      state.solved[state.mission] = true;
+      status(`Výborně. ${mission.title} je složená správně.`, 'ok');
+      renderOutputs();
+    }
+
+    function resetCanvas() {
+      state.nodes = [];
+      state.edges = [];
+      state.selectedNodeId = null;
+      state.activePort = null;
+      renderCanvas();
+      renderSelectedInfo();
+      renderOutputs();
+      status('Pracovní plocha byla vyčištěna. Můžeš stavět znovu.', 'warn');
+    }
+
+    function showHint() {
+      status(missionData().hint, 'warn');
+    }
+
+    function copyPre(id) {
+      const text = document.getElementById(id)?.innerText || '';
+      navigator.clipboard.writeText(text).then(() => status('Text byl zkopírován do schránky.', 'ok'));
+    }
+
+    function renderOutputs() {
+      const mission = missionData();
+      const solved = state.solved[state.mission];
+      const structureSolved = state.solved.structure;
+      const out = mission.output();
+
+      if (structureSolved || state.mission === 'structure') {
+        structurePreview.textContent = missions.structure.output().structure;
+      } else {
+        structurePreview.textContent = 'Nejdřív slož Misi 1. Tím vznikne správný strom projektu.';
+      }
+
+      // Průběžná ukázka je vidět vždy
+      missionReferenceOutput.innerHTML = '';
+
+      if (out.structure) {
+        const refBox = document.createElement('div');
+        refBox.className = 'info-box';
+        refBox.innerHTML = `<h4>Referenční struktura</h4><div class="folder">${escapeHtml(out.structure)}</div>`;
+        missionReferenceOutput.appendChild(refBox);
+      }
+
+      out.codeBlocks.forEach((block, index) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'codeblock';
+        const preId = `reference-${state.mission}-${index}`;
+        wrap.style.marginTop = index === 0 && !out.structure ? '0' : '12px';
+        wrap.innerHTML = `
+          <div class="codeblock__bar">
+            <strong class="codeblock__title">${block.title}</strong>
+            <button class="copy-btn" data-copy="${preId}">Kopírovat</button>
+          </div>
+          <pre id="${preId}"><code>${escapeHtml(block.content)}</code></pre>
+        `;
+        missionReferenceOutput.appendChild(wrap);
+      });
+
+      missionReferenceOutput.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => copyPre(btn.dataset.copy));
+      });
+
+      // Finální výstup až po splnění
+      if (!solved) {
+        generatedOutput.innerHTML = '<p>Zatím ještě není mise složená správně. Dole se po úspěchu objeví finální výstup pro zkopírování.</p>';
+        return;
+      }
+
+      generatedOutput.innerHTML = '';
+
+      if (out.structure) {
+        const box = document.createElement('div');
+        box.className = 'info-box';
+        box.innerHTML = `<h4>Finální strom projektu</h4><div class="folder">${escapeHtml(out.structure)}</div>`;
+        generatedOutput.appendChild(box);
+      }
+
+      out.codeBlocks.forEach((block, index) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'codeblock';
+        const preId = `generated-${state.mission}-${index}`;
+        wrap.style.marginTop = index === 0 && !out.structure ? '0' : '12px';
+        wrap.innerHTML = `
+          <div class="codeblock__bar">
+            <strong class="codeblock__title">${block.title}</strong>
+            <button class="copy-btn" data-copy="${preId}">Kopírovat</button>
+          </div>
+          <pre id="${preId}"><code>${escapeHtml(block.content)}</code></pre>
+        `;
+        generatedOutput.appendChild(wrap);
+      });
+
+      generatedOutput.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => copyPre(btn.dataset.copy));
+      });
+    }
+
+    document.getElementById('checkBtn').addEventListener('click', checkSolution);
+    document.getElementById('resetBtn').addEventListener('click', resetCanvas);
+    document.getElementById('hintBtn').addEventListener('click', showHint);
+
+    renderMissionButtons();
+    renderMissionTask();
+    renderToolbox();
+    renderCanvas();
+    renderSelectedInfo();
+    renderOutputs();
+  </script>
+</body>
+</html>
