@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pracovní list – Dotazník, sběr, analýza a vyhodnocování dat</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #64748b;
+      --line: #dbe4f0;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --accent: #0f766e;
+      --accent-soft: #ccfbf1;
+      --warn: #92400e;
+      --warn-soft: #fef3c7;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #e8f0ff 0%, transparent 30%),
+        radial-gradient(circle at top right, #e9fff8 0%, transparent 25%),
+        var(--bg);
+      line-height: 1.6;
+    }
+
+    .page {
+      width: min(1220px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+      color: white;
+      padding: 34px;
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -60px;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.10);
+    }
+
+    h1, h2, h3, h4 { line-height: 1.2; }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    .subtitle {
+      margin: 0;
+      max-width: 850px;
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.92);
+    }
+
+    .heroMeta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 0.95rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 20px 0 28px;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btnPrimary {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+    }
+
+    .btnSecondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .toc, .card {
+      background: var(--card);
+      border: 1px solid rgba(219, 228, 240, 0.85);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .toc {
+      padding: 22px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .toc h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 1.05rem;
+    }
+
+    .toc a {
+      display: block;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 12px;
+      color: var(--text);
+      text-decoration: none;
+      background: #f8fafc;
+      border: 1px solid transparent;
+    }
+
+    .toc a:hover {
+      border-color: var(--line);
+      background: #eff6ff;
+    }
+
+    .main {
+      display: grid;
+      gap: 20px;
+    }
+
+    .card {
+      padding: 26px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.55rem;
+    }
+
+    .lead {
+      color: var(--muted);
+      margin-top: 0;
+    }
+
+    .grid2, .grid3, .gridLinks {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .gridLinks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+    .miniCard {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+    }
+
+    .miniCard h3, .miniCard h4 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .checklist li {
+      padding-left: 30px;
+      position: relative;
+    }
+
+    .checklist li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .taskList {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .taskItem {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .taskItem input[type="checkbox"] {
+      width: 19px;
+      height: 19px;
+      margin-top: 2px;
+      flex: 0 0 auto;
+      accent-color: var(--primary);
+    }
+
+    .taskItem span { display: block; }
+    .taskItem .taskText { font-weight: 600; }
+    .taskItem .taskSub {
+      color: var(--muted);
+      font-size: 0.93rem;
+      margin-top: 2px;
+    }
+
+    .taskItem.done {
+      background: #effdf8;
+      border-color: #a7f3d0;
+    }
+
+    .taskItem.done .taskText {
+      text-decoration: line-through;
+      color: #0f766e;
+    }
+
+    .note, .warning, .success {
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-top: 16px;
+    }
+
+    .note {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+    }
+
+    .warning {
+      background: var(--warn-soft);
+      border: 1px solid #fcd34d;
+      color: var(--warn);
+    }
+
+    .success {
+      background: var(--accent-soft);
+      border: 1px solid #99f6e4;
+    }
+
+    .fieldGrid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-weight: 700;
+      font-size: 0.96rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font: inherit;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .small {
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .steps {
+      counter-reset: step;
+      display: grid;
+      gap: 14px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      position: relative;
+      padding: 16px 16px 16px 64px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: white;
+      background: var(--primary);
+    }
+
+    .topicButtons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .topicButtons button {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 999px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 600;
+    }
+
+    .topicButtons button:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    .topicPreview {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      min-height: 110px;
+    }
+
+    .resourceLink {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .resourceLink small {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    .resourceLink:hover {
+      background: #eff6ff;
+      border-color: #93c5fd;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #eff6ff;
+    }
+
+    .progressWrap {
+      margin-top: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .progressBar {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progressFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2563eb 0%, #0f766e 100%);
+      transition: width 0.2s ease;
+    }
+
+    .statLine {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 0.93rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0 14px;
+      background: #fff;
+      margin-top: 12px;
+    }
+
+    details summary {
+      cursor: pointer;
+      padding: 14px 0;
+      font-weight: 700;
+    }
+
+    details > div { padding-bottom: 14px; }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .toc {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .grid2, .grid3, .gridLinks, .fieldGrid {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        width: min(100% - 18px, 1220px);
+        margin: 10px auto 28px;
+      }
+
+      .hero, .card, .toc {
+        padding: 18px;
+        border-radius: 18px;
+      }
+    }
+
+    @media print {
+      body { background: white; }
+      .toolbar, .toc { display: none !important; }
+      .page {
+        width: 100%;
+        margin: 0;
+      }
+      .hero, .card {
+        box-shadow: none;
+      }
+      .card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Pracovní list: Dotazník, sběr, analýza a vyhodnocování dat</h1>
+      <p class="subtitle">
+        Tento pracovní list tě provede celým procesem: od nápadu přes vytvoření dotazníku až po vyhodnocení odpovědí.
+        Doporučený nástroj je <strong>Microsoft Forms</strong>, ale můžeš použít i jinou podobnou službu.
+      </p>
+      <div class="heroMeta">
+        <span class="pill">Téma: práce s daty</span>
+        <span class="pill">Doporučený nástroj: MS Forms</span>
+        <span class="pill">Výstup: dotazník + analýza + závěr</span>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <button class="btn btnPrimary" onclick="window.print()">🖨️ Vytisknout / uložit jako PDF</button>
+      <button class="btn btnSecondary" onclick="clearWorksheet()">♻️ Vymazat vyplněné údaje</button>
+      <a class="btn btnSecondary" href="https://forms.office.com/" target="_blank" rel="noopener">🔗 Otevřít Microsoft Forms</a>
+      <a class="btn btnSecondary" href="https://support.microsoft.com/cs-cz/forms" target="_blank" rel="noopener">📘 Nápověda Forms</a>
+    </div>
+
+    <div class="layout">
+      <aside class="toc">
+        <h3>Obsah</h3>
+        <a href="#cil">1. Co je cílem</a>
+        <a href="#rychly-start">2. Rychlý start a kontrola postupu</a>
+        <a href="#tema">3. Výběr tématu</a>
+        <a href="#platforma">4. Odkazy a přihlášení</a>
+        <a href="#navrh">5. Návrh dotazníku</a>
+        <a href="#sber">6. Sběr dat</a>
+        <a href="#analyza">7. Analýza dat</a>
+        <a href="#zaver">8. Vyhodnocení a závěr</a>
+        <a href="#odevzdani">9. Co odevzdat</a>
+
+        <div class="progressWrap">
+          <div class="small"><strong>Postup práce</strong></div>
+          <div class="progressBar"><div class="progressFill" id="progressFill"></div></div>
+          <div class="small" id="progressText">Splněno: 0 %</div>
+          <div class="statLine">
+            <span id="taskCount">Úkoly: 0/0</span>
+            <span id="fieldCount">Pole: 0/0</span>
+          </div>
+        </div>
+
+        <div class="note">
+          <strong>Jak to funguje:</strong><br>
+          můžeš odškrtávat splněné kroky a psát si poznámky. Vše se průběžně ukládá do prohlížeče na tomto zařízení.
+        </div>
+      </aside>
+
+      <main class="main">
+        <section class="card" id="cil">
+          <span class="badge">Úvod</span>
+          <h2>1. Co je cílem této hodiny</h2>
+          <p class="lead">
+            Naučíš se navrhnout smysluplný dotazník, získat odpovědi, data uspořádat a na závěr je vyložit tak,
+            aby z nich šlo udělat rozumné závěry.
+          </p>
+          <div class="grid3">
+            <div class="miniCard">
+              <h3>Co budeš dělat</h3>
+              <ul class="checklist">
+                <li>zvolíš téma a cíl dotazníku</li>
+                <li>navrhneš otázky</li>
+                <li>sesbíráš odpovědi</li>
+                <li>data vyhodnotíš a okomentuješ</li>
+              </ul>
+            </div>
+            <div class="miniCard">
+              <h3>Na co si dát pozor</h3>
+              <ul class="checklist">
+                <li>otázky musí být srozumitelné</li>
+                <li>nepokládej zavádějící otázky</li>
+                <li>sbírej jen údaje, které opravdu potřebuješ</li>
+                <li>mysli na anonymitu respondentů</li>
+              </ul>
+            </div>
+            <div class="miniCard">
+              <h3>Výsledkem bude</h3>
+              <ul class="checklist">
+                <li>hotový dotazník</li>
+                <li>souhrn odpovědí</li>
+                <li>jednoduchá analýza</li>
+                <li>stručný závěr</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="rychly-start">
+          <span class="badge">Interaktivní průvodce</span>
+          <h2>2. Rychlý start a kontrola postupu</h2>
+          <p class="lead">
+            Tady si můžeš průběžně odškrtávat, co už máš hotové. Progress nahoře se přepočítává automaticky.
+          </p>
+
+          <div class="grid2">
+            <div class="miniCard">
+              <h3>Můj checklist</h3>
+              <div class="taskList">
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task1" />
+                  <span>
+                    <span class="taskText">Vybral/a jsem si téma</span>
+                    <span class="taskSub">Vím, co chci pomocí dotazníku zjistit.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task2" />
+                  <span>
+                    <span class="taskText">Přihlásil/a jsem se do platformy</span>
+                    <span class="taskSub">Například do Microsoft Forms.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task3" />
+                  <span>
+                    <span class="taskText">Napsal/a jsem otázky</span>
+                    <span class="taskSub">Mám alespoň 6 smysluplných otázek.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task4" />
+                  <span>
+                    <span class="taskText">Dotazník jsem otestoval/a</span>
+                    <span class="taskSub">Zkontroloval/a jsem, že vše funguje.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task5" />
+                  <span>
+                    <span class="taskText">Začal/a jsem sbírat odpovědi</span>
+                    <span class="taskSub">Dotazník jsem rozeslal/a respondentům.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task6" />
+                  <span>
+                    <span class="taskText">Vyhodnotil/a jsem výsledky</span>
+                    <span class="taskSub">Umím říct, co z dat vyplývá.</span>
+                  </span>
+                </label>
+                <label class="taskItem">
+                  <input type="checkbox" data-check id="task7" />
+                  <span>
+                    <span class="taskText">Mám napsaný závěr</span>
+                    <span class="taskSub">Dokážu shrnout hlavní zjištění.</span>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div class="miniCard">
+              <h3>Moje rychlé poznámky</h3>
+              <div class="field">
+                <label for="quickNotes">Co potřebuji dnes stihnout?</label>
+                <textarea data-save id="quickNotes" placeholder="Např. vytvořit formulář, poslat odkaz, získat minimálně 10 odpovědí, zapsat hlavní závěr..."></textarea>
+              </div>
+              <div class="field">
+                <label for="teacherQuestion">Na co se chci případně zeptat vyučujícího?</label>
+                <textarea data-save id="teacherQuestion" placeholder="Např. jestli můžu použít anonymní dotazník i mimo třídu, jaký minimální počet odpovědí je v pořádku..."></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="tema">
+          <span class="badge">Volba tématu</span>
+          <h2>3. Vyber si téma</h2>
+          <p class="lead">
+            Téma je dobrovolné. Důležité je, aby se dalo skutečně zjistit pomocí odpovědí od lidí.
+          </p>
+
+          <div class="grid3">
+            <div class="miniCard">
+              <h3>Možnost A</h3>
+              <p><strong>Recenze na koncert</strong><br>Jak lidé hodnotili program, atmosféru, zvuk nebo organizaci akce?</p>
+            </div>
+            <div class="miniCard">
+              <h3>Možnost B</h3>
+              <p><strong>Kvalita výuky ve škole</strong><br>Jak studenti vnímají tempo, srozumitelnost nebo využití technologií?</p>
+            </div>
+            <div class="miniCard">
+              <h3>Možnost C</h3>
+              <p><strong>Vlastní téma</strong><br>Například školní jídelna, doprava do školy, využití mobilu, školní akce, hobby apod.</p>
+            </div>
+          </div>
+
+          <div class="topicButtons">
+            <button type="button" data-topic="concert">Ukázka: recenze koncertu</button>
+            <button type="button" data-topic="school">Ukázka: kvalita výuky</button>
+            <button type="button" data-topic="custom">Ukázka: vlastní téma</button>
+          </div>
+
+          <div class="topicPreview" id="topicPreview">
+            Klikni na jedno z tlačítek výše a zobrazí se ti ukázka, jak může vypadat zadání a výzkumná otázka.
+          </div>
+
+          <div class="fieldGrid">
+            <div class="field">
+              <label for="studentName">Jméno / skupina</label>
+              <input data-save type="text" id="studentName" placeholder="Např. Jan Novák / Skupina 2" />
+            </div>
+            <div class="field">
+              <label for="topicName">Zvolené téma</label>
+              <input data-save type="text" id="topicName" placeholder="Např. Recenze na koncert jarního vystoupení" />
+            </div>
+            <div class="field full">
+              <label for="researchQuestion">Hlavní otázka, na kterou chceš odpovědět</label>
+              <textarea data-save id="researchQuestion" placeholder="Např. Jak studenti hodnotí kvalitu koncertu a které části akce považují za nejsilnější nebo nejslabší?"></textarea>
+            </div>
+            <div class="field full">
+              <label for="goal">Cíl dotazníku</label>
+              <textarea data-save id="goal" placeholder="Např. Zjistit, jak byli návštěvníci spokojeni s koncertem a co by organizátoři mohli příště zlepšit."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="platforma">
+          <span class="badge">Platforma a odkazy</span>
+          <h2>4. Odkazy a přihlášení</h2>
+          <p class="lead">
+            Tady máš přímo oficiální odkazy. Stačí otevřít, přihlásit se a začít tvořit.
+          </p>
+
+          <div class="gridLinks">
+            <a class="resourceLink" href="https://forms.office.com/" target="_blank" rel="noopener">
+              Microsoft Forms
+              <small>Hlavní stránka služby. Odtud můžeš začít nový formulář nebo kvíz.</small>
+            </a>
+            <a class="resourceLink" href="https://support.microsoft.com/en-us/office/sign-in-to-microsoft-forms-620daa7a-3e03-4013-8f92-5cce86210ef6" target="_blank" rel="noopener">
+              Jak se přihlásit
+              <small>Oficiální nápověda k přihlášení školním, pracovním nebo osobním Microsoft účtem.</small>
+            </a>
+            <a class="resourceLink" href="https://support.microsoft.com/en-us/office/create-a-form-39a23830-452d-474c-ae1f-47a6ebefa21a" target="_blank" rel="noopener">
+              Jak vytvořit formulář
+              <small>Postup krok za krokem: nový formulář, název, popis, přidávání otázek a motivů.</small>
+            </a>
+            <a class="resourceLink" href="https://support.microsoft.com/cs-cz/forms" target="_blank" rel="noopener">
+              Česká nápověda Forms
+              <small>Přehled nápovědy a výukových materiálů pro Microsoft Forms v češtině.</small>
+            </a>
+          </div>
+
+          <ol class="steps" style="margin-top:16px;">
+            <li>Otevři <strong>forms.office.com</strong>.</li>
+            <li>Přihlas se školním nebo pracovním účtem Microsoft 365. Pokud ho nemáš, můžeš použít i osobní účet Microsoft.</li>
+            <li>Zvol <strong>Nový formulář</strong>.</li>
+            <li>Přidej název a krátký popis, aby respondent věděl, proč dotazník vyplňuje.</li>
+            <li>Začni přidávat otázky a po dokončení formulář otestuj.</li>
+          </ol>
+
+          <details>
+            <summary>Co když se nemohu přihlásit?</summary>
+            <div>
+              Zkus nejprve školní účet. Pokud škola používá Microsoft 365 nebo Teams, účet už pravděpodobně máš. Když si nejsi jistý/á, zeptej se vyučujícího nebo správce školy.
+            </div>
+          </details>
+
+          <div class="fieldGrid">
+            <div class="field full">
+              <label for="platformNotes">Moje poznámky k přihlášení nebo platformě</label>
+              <textarea data-save id="platformNotes" placeholder="Např. přihlášen přes školní účet, formulář už vytvořen, potřebuji ještě zjistit, jak zapnout anonymní odpovědi..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="navrh">
+          <span class="badge">Tvorba dotazníku</span>
+          <h2>5. Návrh dotazníku</h2>
+          <p class="lead">
+            Kvalita výsledků stojí hlavně na kvalitě otázek. Dobře navržený dotazník je krátký, jasný a přehledný.
+          </p>
+
+          <div class="grid2">
+            <div class="miniCard">
+              <h3>Doporučení</h3>
+              <ul class="checklist">
+                <li>začni jednoduchými otázkami</li>
+                <li>používej srozumitelný jazyk</li>
+                <li>vyhýbej se dvojitým otázkám</li>
+                <li>kombinuj uzavřené a otevřené otázky</li>
+                <li>drž dotazník spíše kratší</li>
+              </ul>
+            </div>
+            <div class="miniCard">
+              <h3>Čeho se vyvarovat</h3>
+              <ul class="checklist">
+                <li>„Byl koncert skvělý?“ – příliš navádějící</li>
+                <li>„Jak hodnotíš koncert a organizaci?“ – ptáš se na dvě věci najednou</li>
+                <li>příliš mnoho povinných otázek</li>
+                <li>sběr zbytečných osobních údajů</li>
+              </ul>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Typ otázky</th>
+                <th>Kdy ji použít</th>
+                <th>Příklad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Výběr z možností</td>
+                <td>Když chceš rychlé a přehledné odpovědi</td>
+                <td>Jak často chodíš na koncerty?</td>
+              </tr>
+              <tr>
+                <td>Škála / hodnocení</td>
+                <td>Když chceš zjistit míru spokojenosti</td>
+                <td>Ohodnoť kvalitu zvuku od 1 do 5.</td>
+              </tr>
+              <tr>
+                <td>Otevřená odpověď</td>
+                <td>Když chceš názor nebo návrh</td>
+                <td>Co by se podle tebe mělo zlepšit?</td>
+              </tr>
+              <tr>
+                <td>Volba více odpovědí</td>
+                <td>Když může platit více možností najednou</td>
+                <td>Které části koncertu se ti líbily?</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="fieldGrid">
+            <div class="field">
+              <label for="respondents">Kdo budou respondenti?</label>
+              <input data-save type="text" id="respondents" placeholder="Např. studenti školy, návštěvníci koncertu, spolužáci" />
+            </div>
+            <div class="field">
+              <label for="targetCount">Kolik odpovědí chceš získat?</label>
+              <input data-save type="number" id="targetCount" placeholder="Např. 15" />
+            </div>
+            <div class="field full">
+              <label for="questionPlan">Napiš návrh alespoň 6 otázek</label>
+              <textarea data-save id="questionPlan" placeholder="1. Jak hodnotíš koncert celkově?
+2. Jak hodnotíš kvalitu zvuku?
+3. Jak hodnotíš organizaci akce?
+4. Co se ti líbilo nejvíce?
+5. Co by se mělo zlepšit?
+6. Doporučil/a bys podobnou akci ostatním?"></textarea>
+            </div>
+            <div class="field full">
+              <label for="ethics">Anonymita a etika</label>
+              <textarea data-save id="ethics" placeholder="Např. Dotazník je anonymní. Nebudu sbírat jména ani citlivé osobní údaje. Výsledky použiji jen pro školní účely."></textarea>
+            </div>
+            <div class="field full">
+              <label for="draftNotes">Moje poznámky k návrhu dotazníku</label>
+              <textarea data-save id="draftNotes" placeholder="Např. doplnit jednu škálovou otázku, zkrátit úvod, odstranit jednu zbytečnou otázku..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="sber">
+          <span class="badge">Sběr odpovědí</span>
+          <h2>6. Jak sesbírat data</h2>
+          <p class="lead">
+            Nestačí dotazník jen vytvořit. Musíš promyslet, komu ho pošleš a jak zajistíš, aby sesbíraná data byla použitelná.
+          </p>
+
+          <ol class="steps">
+            <li>Dotazník nejprve otestuj sám/sama na sobě nebo na spolužákovi.</li>
+            <li>Uprav nejasné otázky a zkrať zbytečně dlouhé části.</li>
+            <li>Rozhodni, komu odkaz pošleš: třídě, návštěvníkům akce, skupině studentů apod.</li>
+            <li>Zapiš si, kdy začínáš sběr a kdy ho ukončíš.</li>
+            <li>Po dosažení dostatečného počtu odpovědí už data dále neměň.</li>
+          </ol>
+
+          <div class="fieldGrid">
+            <div class="field">
+              <label for="distribution">Jak budeš dotazník šířit?</label>
+              <input data-save type="text" id="distribution" placeholder="Např. odkaz v Teams, QR kód, e-mail, školní skupina" />
+            </div>
+            <div class="field">
+              <label for="deadline">Do kdy budeš sbírat odpovědi?</label>
+              <input data-save type="text" id="deadline" placeholder="Např. do pátku 12:00" />
+            </div>
+            <div class="field">
+              <label for="formLink">Odkaz na můj dotazník</label>
+              <input data-save type="text" id="formLink" placeholder="Sem si můžeš vložit odkaz na hotový formulář" />
+            </div>
+            <div class="field">
+              <label for="minimumResponses">Minimální počet odpovědí</label>
+              <input data-save type="number" id="minimumResponses" placeholder="Např. 10" />
+            </div>
+            <div class="field full">
+              <label for="collectionNote">Poznámka ke sběru dat</label>
+              <textarea data-save id="collectionNote" placeholder="Např. Dotazník rozešlu spolužákům po hodině. Potřebuji minimálně 15 odpovědí."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="analyza">
+          <span class="badge">Práce s výsledky</span>
+          <h2>7. Analýza dat</h2>
+          <p class="lead">
+            Teď přichází nejdůležitější část: nestačí data jen zobrazit. Musíš je také vysvětlit.
+          </p>
+
+          <div class="grid2">
+            <div class="miniCard">
+              <h3>Co můžeš sledovat</h3>
+              <ul class="checklist">
+                <li>nejčastější odpovědi</li>
+                <li>procenta a počty</li>
+                <li>průměrné hodnocení</li>
+                <li>nejčastější návrhy ke zlepšení</li>
+              </ul>
+            </div>
+            <div class="miniCard">
+              <h3>Jak na otevřené odpovědi</h3>
+              <ul class="checklist">
+                <li>najdi opakující se motivy</li>
+                <li>seskup podobné odpovědi do kategorií</li>
+                <li>uveď 2–3 typické příklady</li>
+                <li>napiš, co z nich vyplývá</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="success">
+            <strong>Doporučený postup:</strong> Nejprve se podívej na souhrn odpovědí přímo v platformě.
+            Když chceš detailnější práci s daty, přenes si odpovědi do tabulky a zkus počty, procenta nebo jednoduchý graf.
+          </div>
+
+          <div class="fieldGrid">
+            <div class="field">
+              <label for="responseCount">Kolik odpovědí jsi získal/a?</label>
+              <input data-save type="number" id="responseCount" placeholder="Např. 22" />
+            </div>
+            <div class="field">
+              <label for="bestFinding">Nejdůležitější zjištění</label>
+              <input data-save type="text" id="bestFinding" placeholder="Např. 68 % respondentů hodnotilo akci známkou 1 nebo 2" />
+            </div>
+            <div class="field full">
+              <label for="analysisText">Stručná analýza výsledků</label>
+              <textarea data-save id="analysisText" placeholder="Např. Většina respondentů hodnotila koncert pozitivně. Nejlépe dopadla atmosféra a program. Nejčastější připomínkou byla délka akce a ozvučení v zadní části sálu."></textarea>
+            </div>
+            <div class="field full">
+              <label for="limitations">Omezení dotazníku</label>
+              <textarea data-save id="limitations" placeholder="Např. Odpovídali hlavně studenti jedné třídy, takže výsledek nemusí reprezentovat všechny návštěvníky. Vzorek byl menší a některé otázky mohly být příliš obecné."></textarea>
+            </div>
+            <div class="field full">
+              <label for="analysisNotes">Další poznámky k analýze</label>
+              <textarea data-save id="analysisNotes" placeholder="Např. otevřené odpovědi se často opakovaly, nejčastější problém byl zvuk, většina lidí doporučila akci znovu..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="zaver">
+          <span class="badge">Interpretace</span>
+          <h2>8. Vyhodnocení a závěr</h2>
+          <p class="lead">
+            Závěr by měl odpovědět na tvoji původní otázku. Napiš, co jsi zjistil/a a co z toho vyplývá.
+          </p>
+
+          <div class="grid2">
+            <div class="miniCard">
+              <h3>V závěru napiš</h3>
+              <ul class="checklist">
+                <li>zda se podařilo splnit cíl dotazníku</li>
+                <li>co vyšlo jako hlavní zjištění</li>
+                <li>co by se dalo příště zlepšit</li>
+                <li>jak by šel výzkum rozšířit</li>
+              </ul>
+            </div>
+            <div class="miniCard">
+              <h3>Příklad</h3>
+              <p>
+                „Dotazník ukázal, že respondenti byli s akcí spíše spokojeni. Největší rezervy se objevily u organizace a ozvučení.
+                Pokud by se příště podařilo zlepšit technické zajištění, celkové hodnocení by bylo pravděpodobně ještě vyšší.“
+              </p>
+            </div>
+          </div>
+
+          <div class="fieldGrid">
+            <div class="field full">
+              <label for="conclusion">Můj závěr</label>
+              <textarea data-save id="conclusion" placeholder="Sem napiš své vlastní vyhodnocení a závěr."></textarea>
+            </div>
+            <div class="field full">
+              <label for="nextTime">Co bych příště udělal/a jinak?</label>
+              <textarea data-save id="nextTime" placeholder="Např. zvolil/a bych přesnější otázky, delší čas na sběr odpovědí, více respondentů..."></textarea>
+            </div>
+          </div>
+        </section>
+
+        <section class="card" id="odevzdani">
+          <span class="badge">Výstup</span>
+          <h2>9. Co odevzdat</h2>
+          <p class="lead">
+            Můžeš odevzdat jako odkaz, screenshoty nebo krátké shrnutí v dokumentu podle pokynů vyučujícího.
+          </p>
+
+          <ul class="checklist">
+            <li>odkaz na hotový dotazník</li>
+            <li>alespoň několik skutečných odpovědí</li>
+            <li>stručné vyhodnocení dat</li>
+            <li>závěr, co z výsledků vyplývá</li>
+          </ul>
+
+          <div class="taskList" style="margin-top:16px;">
+            <label class="taskItem">
+              <input type="checkbox" data-check id="submit1" />
+              <span>
+                <span class="taskText">Mám hotový odkaz na dotazník</span>
+                <span class="taskSub">Formulář je vytvořený a jde otevřít.</span>
+              </span>
+            </label>
+            <label class="taskItem">
+              <input type="checkbox" data-check id="submit2" />
+              <span>
+                <span class="taskText">Mám aspoň několik odpovědí</span>
+                <span class="taskSub">Data už se dají stručně vyhodnotit.</span>
+              </span>
+            </label>
+            <label class="taskItem">
+              <input type="checkbox" data-check id="submit3" />
+              <span>
+                <span class="taskText">Mám napsaný závěr</span>
+                <span class="taskSub">Dokážu vysvětlit, co z výsledků vyplývá.</span>
+              </span>
+            </label>
+          </div>
+
+          <div class="note">
+            <strong>Dobrá práce:</strong> Nejde jen o to vytvořit formulář, ale hlavně umět z dat vyčíst smysluplnou informaci.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <p class="footer">
+      Pracovní list je interaktivní – vyplněné údaje i zaškrtnuté kroky se průběžně ukládají do prohlížeče na tomto zařízení.
+    </p>
+  </div>
+
+  <script>
+    const topicPreview = document.getElementById('topicPreview');
+    const topicButtons = document.querySelectorAll('[data-topic]');
+    const saveFields = document.querySelectorAll('[data-save]');
+    const checkFields = document.querySelectorAll('[data-check]');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const taskCount = document.getElementById('taskCount');
+    const fieldCount = document.getElementById('fieldCount');
+
+    const previews = {
+      concert: `
+        <strong>Ukázka tématu: Recenze na koncert</strong><br>
+        <strong>Cíl:</strong> zjistit spokojenost návštěvníků s koncertem.<br>
+        <strong>Výzkumná otázka:</strong> Jak lidé hodnotí program, atmosféru, zvuk a organizaci koncertu?<br>
+        <strong>Možné otázky:</strong> Celkové hodnocení, kvalita zvuku, délka programu, co se líbilo nejvíce, co zlepšit.
+      `,
+      school: `
+        <strong>Ukázka tématu: Kvalita výuky ve škole</strong><br>
+        <strong>Cíl:</strong> zjistit, jak studenti vnímají výuku určitého předmětu nebo styl práce ve škole.<br>
+        <strong>Výzkumná otázka:</strong> Co studenti považují za silné a slabé stránky výuky?<br>
+        <strong>Možné otázky:</strong> Srozumitelnost výkladu, tempo, využití technologií, prostor pro dotazy, návrhy na zlepšení.
+      `,
+      custom: `
+        <strong>Ukázka tématu: Vlastní dotazník</strong><br>
+        <strong>Cíl:</strong> vybrat si vlastní problém a zjistit názory respondentů.<br>
+        <strong>Výzkumná otázka:</strong> Co přesně chci pomocí odpovědí zjistit?<br>
+        <strong>Možné oblasti:</strong> školní jídelna, doprava do školy, využití mobilních telefonů, oblíbené aplikace, volný čas.
+      `
+    };
+
+    topicButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const key = button.dataset.topic;
+        topicPreview.innerHTML = previews[key] || '';
+      });
+    });
+
+    function saveData() {
+      saveFields.forEach(field => {
+        localStorage.setItem('dotaznik_' + field.id, field.value);
+      });
+      checkFields.forEach(field => {
+        localStorage.setItem('dotaznik_' + field.id, field.checked ? '1' : '0');
+      });
+      updateProgress();
+      paintCompletedTasks();
+    }
+
+    function loadData() {
+      saveFields.forEach(field => {
+        const value = localStorage.getItem('dotaznik_' + field.id);
+        if (value !== null) field.value = value;
+        field.addEventListener('input', saveData);
+      });
+
+      checkFields.forEach(field => {
+        const value = localStorage.getItem('dotaznik_' + field.id);
+        field.checked = value === '1';
+        field.addEventListener('change', saveData);
+      });
+
+      updateProgress();
+      paintCompletedTasks();
+    }
+
+    function paintCompletedTasks() {
+      document.querySelectorAll('.taskItem').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        item.classList.toggle('done', checkbox && checkbox.checked);
+      });
+    }
+
+    function updateProgress() {
+      const totalFields = saveFields.length;
+      const filledFields = Array.from(saveFields).filter(field => field.value.trim() !== '').length;
+
+      const totalChecks = checkFields.length;
+      const checkedTasks = Array.from(checkFields).filter(field => field.checked).length;
+
+      const totalAll = totalFields + totalChecks;
+      const doneAll = filledFields + checkedTasks;
+      const percent = totalAll ? Math.round((doneAll / totalAll) * 100) : 0;
+
+      progressFill.style.width = percent + '%';
+      progressText.textContent = 'Splněno: ' + percent + ' %';
+      taskCount.textContent = 'Úkoly: ' + checkedTasks + '/' + totalChecks;
+      fieldCount.textContent = 'Pole: ' + filledFields + '/' + totalFields;
+    }
+
+    function clearWorksheet() {
+      if (!confirm('Opravdu chceš vymazat všechna vyplněná pole a zaškrtnuté kroky v tomto pracovním listu?')) return;
+
+      saveFields.forEach(field => {
+        field.value = '';
+        localStorage.removeItem('dotaznik_' + field.id);
+      });
+
+      checkFields.forEach(field => {
+        field.checked = false;
+        localStorage.removeItem('dotaznik_' + field.id);
+      });
+
+      topicPreview.textContent = 'Klikni na jedno z tlačítek výše a zobrazí se ti ukázka, jak může vypadat zadání a výzkumná otázka.';
+      updateProgress();
+      paintCompletedTasks();
+    }
+
+    loadData();
+    window.clearWorksheet = clearWorksheet;
+  </script>
+</body>
+</html>
